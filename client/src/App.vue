@@ -1,40 +1,34 @@
 <template>
-  <div id="app">
-    <menu type="context" id="menu">
+  <div>
+    <menu type="context" id="menu" v-if="me">
       <ul class="side-nav">
         <li>
           <div class="user-view">
-            <img src="https://pt.gravatar.com/userimage/99657987/b6755a22de17450e7c3f6c73462c9fa4.jpeg" alt="" class="circle">
-            <span>Iago C.</span>
+            <img src="https://pt.gravatar.com/userimage/99657987/b6755a22de17450e7c3f6c73462c9fa4.jpeg" class="circle">
+            <span>{{ me.user.name }}</span>
           </div>
         </li>
-        <li><a href=""><i class="material-icons">home</i></a></li>
-        <li><a href=""><i class="material-icons">email</i></a></li>
-        <li><a href=""><i class="material-icons">supervisor_account</i></a></li>
+        <li><a href="#/"><i class="material-icons">home</i></a></li>
+        <li><a href="#/email"><i class="material-icons">email</i></a></li>
+        <li><a href="#/lists"><i class="material-icons">supervisor_account</i></a></li>
         <li><a href=""><i class="material-icons">lock</i></a></li>
         <li><a href=""><i class="material-icons">exit_to_app</i></a></li>
-      </ul>    
+      </ul>
     </menu>
     <section id="page">
       <header id="header">
         <ul id="dropdown1" class="dropdown-content">
-          <li>
-            <a href="">Temos 2 novos leads</a>
-          </li>
-          <li>
-            <a href="">Sua campanha teve novos clicks</a>
-          </li>
+          <li><a href="">temos 2 novos leads</a></li>
+          <li><a href="">sua companha teve novos clicks</a></li>
         </ul>
         <nav class="row light-blue">
           <div class="nav-wrapper col s12">
-            <a class="brand-logo hide-on-med-and-down" href="">Digital Marketing</a>
-            <a class="brand-logo hide-on-large-only" href="">DM</a>
-            <ul id="nav-mobile" class="right">
-              <li>
-                <a class="dropdown-button" data-activates="dropdown1" href="">
-                  <i class="material-icons black-text">notifications_active</i>
-                </a>
-              </li>
+            <a href="" class="brand-logo hide-on-med-and-down">Digital Marketing</a>
+            <a href="" class="brand-logo hide-on-large-only">DM</a>
+            <ul id="nav-mobile" class="right" v-if="me">
+              <li><a href="" class="dropdown-button" data-activates="dropdown1">
+                <i class="material-icons black-text">notifications_active</i>
+              </a></li>
             </ul>
           </div>
         </nav>
@@ -47,10 +41,10 @@
         </section>
       </main>
       <footer id="footer" class="row grey lighten-3">
-        <div class="col x12">
-          <small>Iago Cavalcante</small>
+        <div class="col s12">
+          <small>by Iago Cavalcante</small>
         </div>
-      </footer>  
+      </footer>
     </section>
   </div>
 </template>
@@ -60,6 +54,11 @@ import $ from 'jquery'
 
 export default {
   name: 'app',
+  computed: {
+    me () {
+      return this.$store.state.user.me
+    }
+  },
   mounted () {
     $('.dropdown-button').dropdown({
       belowOrigin: true
