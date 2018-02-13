@@ -2,17 +2,27 @@ let qs = require('qs')
 
 export default {
   state: {
-    emails: []
+    emails: [],
+    email: {}
   },
   mutations: {
     updateEmails (state, data) {
       state.emails = data
+    },
+    updateEmail (state, data) {
+      state.email = data
     }
   },
   actions: {
     getAll: function (context) {
       return window.axios.get('/api/campaigns').then((res) => {
         context.commit('updateEmails', res.data.data)
+        return res
+      })
+    },
+    getOne: function (context, id) {
+      return window.axios.get(`/api/campaigns/${id}`).then((res) => {
+        context.commit('updateEmail', res.data.data)
         return res
       })
     },
