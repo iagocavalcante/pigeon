@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 import user from './modules/user'
+import email from './modules/email'
 
 window.axios = require('axios')
 window.axios.defaults.baseURL = process.env.SERVER
@@ -9,7 +10,8 @@ window.axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-url
 
 let config = {
   modules: {
-    user: user
+    user: user,
+    email: email
   }
 }
 
