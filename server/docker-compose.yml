@@ -7,7 +7,7 @@ services:
     ports: 
       - "27017:27017"
   node:
-    image: "node:8.9.4-slim"
+    image: "node:8.16.0-slim"
     user: "node"
     working_dir: /home/node/app
     environment:
