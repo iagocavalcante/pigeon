@@ -54,7 +54,7 @@
     "http-proxy-middleware": "0.19.1",
     "nightwatch": "0.9.21",
     "opn": "5.5.0",
-    "optimize-css-assets-webpack-plugin": "3.2.0",
+    "optimize-css-assets-webpack-plugin": "5.0.1",
     "ora": "1.4.0",
     "rimraf": "2.6.3",
     "selenium-server": "3.141.59",
