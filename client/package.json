@@ -55,7 +55,7 @@
     "nightwatch": "1.1.11",
     "opn": "5.5.0",
     "optimize-css-assets-webpack-plugin": "5.0.1",
-    "ora": "1.4.0",
+    "ora": "3.4.0",
     "rimraf": "2.6.3",
     "selenium-server": "3.141.59",
     "semver": "5.7.0",
