@@ -1,3 +1,3 @@
 module.exports = {
-    jwtSecret: 'asdjflkçasq´jOPAUDFJSsdfjioj'
-}
+    jwrSecret: "jasu37dhna83hdaa3434fds"
+};

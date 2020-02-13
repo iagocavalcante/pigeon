@@ -1,29 +1,29 @@
-const passport = require('passport')
+let passport = require('passport');
+let passportJwtStrategy = require('passport-jwt').Strategy;
+let passportExtractJwt = require('passport-jwt').ExtractJwt;
 
-const PassportJwtStrategy = require('passport-jwt').Strategy
-const passportExtractJwt = require('passport-jwt').ExtractJwt
+let User = require('../../models/user');
+let cfg = require('../../../config');
 
-const User = require('../../models/user')
-const config = require('../../../config')
-
-const params = {
-    secretOrKey: config.jwtSecret,
+let params = {
+    secretOrKey: cfg.jwrSecret,
     jwtFromRequest: passportExtractJwt.fromAuthHeaderAsBearerToken()
 }
 
-const strategy = new PassportJwtStrategy(params, (jwtPayload, done) => {
-    const id = jwtPayload.id
-    const callback = (err, user) => {
+let strategy = new passportJwtStrategy(params, function(jwt_payload, done) {
+    let id = jwt_payload.id;
+
+    let callback = function (err, user) {
         if (err) {
-            return done(err)
+            return done(err);
         }
 
-        return done(null, user)
+        return done(null, user);
     }
 
-    User.findById(id, callback)
-})
+    User.findById(id, callback);
+});
 
-passport.use(strategy)
+passport.use(strategy);
 
-module.exports = passport
+module.exports = passport;

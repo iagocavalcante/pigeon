@@ -1,19 +1,21 @@
-
 const passport = require('../auth/auth');
+
 let auth = require('./auth');
-let lists = require('./lists');
 let campaigns = require('./campaigns');
 let leads = require('./leads');
+let lists = require('./lists');
+let tracking = require('./tracking');
 
 module.exports = (app) => {
-    app.get('/', function (req, res, next) {
-      res.render('index', { title: 'Express' });
+    app.get('/', function(req, res) {
+        res.render('index', { title: 'Express' });
     });
 
-    app.use('/api', passport.authenticate('jwt', { session: false }));
-    
+    app.use('/api', passport.authenticate('jwt', {session: false}));
+
     auth(app);
-    lists(app);
     campaigns(app);
     leads(app);
+    lists(app);
+    tracking(app);
 }
