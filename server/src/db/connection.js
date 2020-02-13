@@ -1,6 +1,6 @@
 let Mongoose = require('mongoose');
 
-Mongoose.connect('mongodb://mongo:27017/emailmarketing', { useMongoClient: true}, (err) => {
+Mongoose.connect(process.env.MONGODB_URI, { useMongoClient: true}, (err) => {
   if (!err) {
     console.log('Mongoose Conectado!')
   }
