@@ -33,7 +33,7 @@
     "chromedriver": "80.0.1",
     "connect-history-api-fallback": "1.6.0",
     "copy-webpack-plugin": "5.1.1",
-    "cross-spawn": "7.0.1",
+    "cross-spawn": "7.0.3",
     "css-loader": "3.4.2",
     "cssnano": "4.1.10",
     "eslint": "6.8.0",
