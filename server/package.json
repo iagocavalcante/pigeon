@@ -20,6 +20,6 @@
     "nodemon": "1.19.4",
     "passport": "0.4.1",
     "passport-jwt": "3.0.1",
-    "serve-favicon": "2.4.5"
+    "serve-favicon": "2.5.0"
   }
 }
