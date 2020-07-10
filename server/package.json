@@ -10,7 +10,7 @@
     "cookie-parser": "1.4.5",
     "cors": "2.8.5",
     "debug": "2.6.9",
-    "ejs": "2.5.9",
+    "ejs": "2.7.4",
     "express": "4.17.1",
     "express-validator": "4.3.0",
     "jwt-simple": "0.5.6",
