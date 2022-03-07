@@ -59,7 +59,7 @@
     "rimraf": "3.0.2",
     "selenium-server": "3.141.59",
     "semver": "7.3.2",
-    "shelljs": "0.8.4",
+    "shelljs": "0.8.5",
     "sw-precache-webpack-plugin": "1.0.0",
     "uglify-es": "3.3.10",
     "url-loader": "3.0.0",
