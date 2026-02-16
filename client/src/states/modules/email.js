@@ -1,4 +1,4 @@
-let qs = require('qs')
+import qs from 'qs'
 
 export default {
   state: {

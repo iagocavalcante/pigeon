@@ -1,142 +1,202 @@
 <template>
-  <div>
-    <div style="padding: 20px; background: red; color: white; font-size: 24px;">APP MOUNTED - {{ me }}</div>
-    <menu type="context" id="menu" v-if="me">
-      <ul class="side-nav">
-        <li>
-          <div class="user-view">
-            <img src="https://pt.gravatar.com/userimage/99657987/b6755a22de17450e7c3f6c73462c9fa4.jpeg" class="circle">
-            <span>{{ me.user.name }}</span>
-          </div>
-        </li>
-        <li><a href="#/"><i class="material-icons">home</i></a></li>
-        <li><a href="#/email"><i class="material-icons">email</i></a></li>
-        <li><a href="#/lists"><i class="material-icons">supervisor_account</i></a></li>
-        <li><a href=""><i class="material-icons">lock</i></a></li>
-        <li><a href=""><i class="material-icons">exit_to_app</i></a></li>
-      </ul>
-    </menu>
-    <section id="page">
-      <header id="header">
-        <ul id="dropdown1" class="dropdown-content">
-          <li><a href="">temos 2 novos leads</a></li>
-          <li><a href="">sua companha teve novos clicks</a></li>
-        </ul>
-        <nav class="row light-blue">
-          <div class="nav-wrapper col s12">
-            <a href="" class="brand-logo hide-on-med-and-down">Digital Marketing</a>
-            <a href="" class="brand-logo hide-on-large-only">DM</a>
-            <ul id="nav-mobile" class="right" v-if="me">
-              <li><a href="" class="dropdown-button" data-activates="dropdown1">
-                <i class="material-icons black-text">notifications_active</i>
-              </a></li>
-            </ul>
-          </div>
-        </nav>
-      </header>
-      <main id="content">
-        <section class="row">
-          <div class="col s12">
-            <router-view></router-view>
-          </div>
-        </section>
-      </main>
-      <footer id="footer" class="row grey lighten-3">
-        <div class="col s12">
-          <small>by Iago Cavalcante</small>
+  <div class="app-container">
+    <aside class="sidebar" v-if="me">
+      <div class="sidebar-header">
+        <h2>Pigeon</h2>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#/" class="nav-item">
+          <span class="nav-icon">🏠</span>
+          Home
+        </a>
+        <a href="#/email" class="nav-item">
+          <span class="nav-icon">📧</span>
+          Campaigns
+        </a>
+        <a href="#/lists" class="nav-item">
+          <span class="nav-icon">👥</span>
+          Lists
+        </a>
+        <a href="" class="nav-item" @click.prevent="logout">
+          <span class="nav-icon">🚪</span>
+          Logout
+        </a>
+      </nav>
+    </aside>
+
+    <main class="main-content" v-if="me">
+      <header class="top-bar">
+        <div class="user-info">
+          <span class="user-avatar">{{ userInitial }}</span>
+          <span class="user-name">{{ me.user ? me.user.name : 'User' }}</span>
         </div>
+      </header>
+
+      <div class="content-area">
+        <router-view></router-view>
+      </div>
+
+      <footer class="footer">
+        <small>by Iago Cavalcante</small>
       </footer>
-    </section>
+    </main>
+
+    <div v-if="!me" class="full-page-content">
+      <router-view></router-view>
+    </div>
   </div>
 </template>
 
 <script>
-import $ from 'jquery'
-
 export default {
-  name: 'app',
   computed: {
-    me () {
+    me() {
       return this.$store.state.user.me
+    },
+    userInitial() {
+      if (this.me && this.me.user && this.me.user.name) {
+        return this.me.user.name.charAt(0).toUpperCase()
+      }
+      return 'U'
     }
   },
-  mounted () {
-    $('.dropdown-button').dropdown({
-      belowOrigin: true
-    })
+  methods: {
+    logout() {
+      window.localStorage.removeItem('token')
+      this.$store.commit('updateUser', null)
+      this.$store.commit('updateToken', null)
+      window.location.href = '#/login'
+    }
   }
 }
 </script>
 
 <style>
-  @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
-  
-  body {
-    background-color: #fafafa !important;
-  }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-  #page {
-    display: flex;
-    min-height: 100vh;
-    flex-direction: column;
-  }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f8f9fa;
+  color: #1a1a2e;
+}
 
-  #footer {
-    width: 100%;
-    margin-bottom: 0;
-  }
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
 
-  main {
-    flex: 1 0 auto;
-  }
+.sidebar {
+  width: 240px;
+  background: white;
+  border-right: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  height: 100vh;
+}
 
-  #menu {
-    text-align: center;
-    padding: 0;
-    margin: 0;
-  }
+.sidebar-header {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
 
-  #menu .user-view.material-icons {
-    display: block;
-    font-size: 60px;
-  }
+.sidebar-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
 
-  #menu .side-nav, #menu .side-nav li>a>i.material-icons {
-    text-align: center;
-    color: inherit;
-  }
+.sidebar-nav {
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-  #menu .side-nav li>a>i.material-icons {
-    float: none;
-    display: inline-block;
-    margin: 0;
-    font-size: 30px;
-  }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: #6b7280;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
 
-  #menu .side-nav li>a {
-    border: 1px solid #424242;
-    margin-right: 4px;
-    margin-bottom: 4px;
-    color: #9e9e9e;
-  }
+.nav-item:hover {
+  background: #f3f4f6;
+  color: #1a1a2e;
+}
 
-  #menu .side-nav li>a:hover {
-    color: #757575;
-    background-color: #000000;
-  }
+.nav-icon {
+  font-size: 18px;
+}
 
-  #menu .side-nav {
-    transform: translateX(0);
-    width: 150px;
-    background-color: #212121;
-    color: #9e9e9e;
-  }
+.main-content {
+  flex: 1;
+  margin-left: 240px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 
-  #menu+#page {
-    margin-left: 150px;
-  }
+.top-bar {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 32px;
+  display: flex;
+  justify-content: flex-end;
+}
 
-  #dropdown1 {
-    width: 200px !important;
-  }
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1a1a2e;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.user-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1a2e;
+}
+
+.content-area {
+  flex: 1;
+  padding: 32px;
+}
+
+.footer {
+  padding: 16px 32px;
+  border-top: 1px solid #e5e7eb;
+  background: white;
+}
+
+.footer small {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.full-page-content {
+  width: 100%;
+}
 </style>
