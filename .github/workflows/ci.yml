@@ -38,3 +38,8 @@ jobs:
         run: |
           cd client
           npm run build
+
+      - name: Lint code
+        run: |
+          cd client
+          npm run lint || true
