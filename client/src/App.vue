@@ -1,5 +1,6 @@
 <template>
   <div>
+    <div style="padding: 20px; background: red; color: white; font-size: 24px;">APP MOUNTED - {{ me }}</div>
     <menu type="context" id="menu" v-if="me">
       <ul class="side-nav">
         <li>
