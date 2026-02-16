@@ -2,60 +2,29 @@ function CrudService (model) {
   this.model = model;
 }
 
-CrudService.prototype.list = function () {
-  return new Promise((resolve) => {
-    this.model.find(null, (err, result) => {
-      return resolve({ data: result });
-    })
-  })
+CrudService.prototype.list = async function () {
+  let result = await this.model.find();
+  return { data: result };
 }
 
-CrudService.prototype.insert = function (data) {
-  return new Promise((resolve, reject) => {
-    this.model.create(data, (err, result) => {
-      if (err) {
-        return reject({ err: err });
-      }
-
-      return resolve({ data: result });
-    })
-  })
+CrudService.prototype.insert = async function (data) {
+  let result = await this.model.create(data);
+  return { data: result };
 }
 
-CrudService.prototype.get = function (id) {
-  return new Promise((resolve, reject) => {
-    this.model.findById(id, (err, result) => {
-      if (err) {
-        return reject({ err: err });
-      }
-
-      return resolve({ data: result });
-    })
-  })
+CrudService.prototype.get = async function (id) {
+  let result = await this.model.findById(id);
+  return { data: result };
 }
 
-CrudService.prototype.update = function (id, data) {
-  return new Promise((resolve, reject) => {
-    this.model.findByIdAndUpdate(id, { $set: data}, (err, result) => {
-      if (err) {
-        return reject({ err: err });
-      }
-
-      return resolve({ data: result });
-    })
-  })
+CrudService.prototype.update = async function (id, data) {
+  let result = await this.model.findByIdAndUpdate(id, { $set: data}, { new: true });
+  return { data: result };
 }
 
-CrudService.prototype.delete = function (id) {
-  return new Promise((resolve, reject) => {
-    this.model.findByIdAndremove(id, (err, result) => {
-      if (err) {
-        return reject({ err: err });
-      }
-
-      return resolve({ data: result });
-    })
-  })
+CrudService.prototype.delete = async function (id) {
+  let result = await this.model.findByIdAndDelete(id);
+  return { data: result };
 }
 
 module.exports = CrudService;

@@ -14,69 +14,45 @@ module.exports = function () {
             return res.status(422).json(errors);
         }
 
-        let list;
-        await listModel.findOne({ title: req.body['list'] }, async (err, result) => {
-            if (!result) {
-                await listModel.create({title: req.body['list'], quantity: 0}, (err, result) => {
-                    list = result;
-                })
-            } else {
-                list = result;
-            }
-        });
+        let list = await listModel.findOne({ title: req.body.list });
+        
+        if (!list) {
+            list = await listModel.create({title: req.body.list, quantity: 0});
+        }
 
-        let register = function () {
-            let lead = {
-                email: req.body['email'],
+        let lead = await model.findOne({email: req.body.email});
+
+        if (!lead) {
+            lead = await model.create({
+                email: req.body.email,
                 lists: [list._id]
-            }
-            model.create(lead);
-
+            });
             list.quantity++;
-            list.save();
-        }
-
-        let update = function (lead) {
-            if (lead.lists.indexOf(list._id) === -1) {
+        } else {
+            if (!lead.lists.includes(list._id)) {
                 lead.lists.push(list._id);
-                lead.save();
-
+                await lead.save();
                 list.quantity++;
-                list.save();
             }
         }
 
-        model.findOne({email: req.body['email']}, function (err, lead) {
-            if (err) return res.json(err);
-
-            if (!lead) {
-                register();
-            } else {
-                update(lead);
-            }
-        });
-
-        model.findOne({ email: req.body['email'] }).populate('lists').exec(function (err, lead) {
-            console.log(lead)
-        })
+        await list.save();
 
         return res.json({status: 'success'});
     }
 
-    controller.leadsByList = function (req, res) {
+    controller.leadsByList = async function (req, res) {
         let lists = req.params.id.split(',');
-        model.find({ lists: { $in: lists }}).populate('lists').exec(function (err, leads) {
-            return res.json({data: leads});
-        });
+        let leads = await model.find({ lists: { $in: lists }}).populate('lists');
+        return res.json({data: leads});
     }
 
-    controller.view = function (req, res) {
-        model.findById(req.params.id).populate('lists actions.campaign').exec((err, result) => {
-            if (err) {
-                return res.status(404).json(err);
-            }
-            return res.json({data: result});
-        })
+    controller.view = async function (req, res) {
+        let result = await model.findById(req.params.id).populate('lists actions.campaign');
+        if (!result) {
+            return res.status(404).json({error: 'Not found'});
+        }
+        return res.json({data: result});
     }
 
     return controller

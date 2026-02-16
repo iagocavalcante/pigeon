@@ -1,10 +1,7 @@
-let Mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
-Mongoose.connect(process.env.MONGODB_URI, { useMongoClient: true}, (err) => {
-  if (!err) {
-    console.log('Mongoose Conectado!')
-  }
-  console.log('Mongoose Error! => ', err)
-})
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Mongoose Conectado!'))
+  .catch(err => console.log('Mongoose Error! => ', err))
 
-module.exports = Mongoose
+module.exports = mongoose

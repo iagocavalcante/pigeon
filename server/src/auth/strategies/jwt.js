@@ -10,18 +10,17 @@ let params = {
     jwtFromRequest: passportExtractJwt.fromAuthHeaderAsBearerToken()
 }
 
-let strategy = new passportJwtStrategy(params, function(jwt_payload, done) {
-    let id = jwt_payload.id;
-
-    let callback = function (err, user) {
-        if (err) {
-            return done(err);
+let strategy = new passportJwtStrategy(params, async function(jwt_payload, done) {
+    try {
+        let user = await User.findById(jwt_payload.id);
+        if (user) {
+            return done(null, user);
+        } else {
+            return done(null, false);
         }
-
-        return done(null, user);
+    } catch (err) {
+        return done(err);
     }
-
-    User.findById(id, callback);
 });
 
 passport.use(strategy);

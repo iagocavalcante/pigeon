@@ -9,7 +9,7 @@ const service = new CrudService(model);
 module.exports = function () {
     const controller = new GenericController(model)
 
-    controller.totals = (req, res) => {
+    controller.totals = async (req, res) => {
         const query = [{
             $group: {
                 _id: null,
@@ -18,12 +18,11 @@ module.exports = function () {
             }
         }]
 
-        model.aggregate(query).exec(function (err, result) {
-            return res.json(result);
-        });
+        let result = await model.aggregate(query);
+        return res.json(result);
     }
 
-    controller.edit = (req, res) => {
+    controller.edit = async (req, res) => {
         let data = {};
         data.lists = [];
 
@@ -35,32 +34,29 @@ module.exports = function () {
             }
         });
 
-        service.update(req.params.id, data)
-            .then((result) => {
-                return res.json(result);
-            })
-            .catch((err) => {
-                return res.status(422).json(err);
-            })
+        try {
+            let result = await service.update(req.params.id, data);
+            return res.json(result);
+        } catch (err) {
+            return res.status(422).json(err);
+        }
     }
 
-    controller.apiRenderEmail = (req, res) => {
-        model.findById(req.params.id, (err, result) => {
-            if (err) {
-                return res.status(404).send('not found');
-            }
-            return res.render('mail_render', { body: result.body })
-        });
+    controller.apiRenderEmail = async (req, res) => {
+        let result = await model.findById(req.params.id);
+        if (!result) {
+            return res.status(404).send('not found');
+        }
+        return res.render('mail_render', { body: result.body })
     }
 
-    controller.renderEmail = (req, res) => {
-        model.findById(req.params.id, (err, result) => {
-            if (err) {
-                return res.status(404).send('not found');
-            }
-            let body = tracker(result.body, req.params.id, req.params.leadid);
-            return res.render('mail_render', { body: body })
-        });
+    controller.renderEmail = async (req, res) => {
+        let result = await model.findById(req.params.id);
+        if (!result) {
+            return res.status(404).send('not found');
+        }
+        let body = tracker(result.body, req.params.id, req.params.leadid);
+        return res.render('mail_render', { body: body })
     }
 
     return controller
