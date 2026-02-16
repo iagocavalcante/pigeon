@@ -1,0 +1,32 @@
+app = "pigeon-api"
+primary_region = "gru"
+
+[build]
+
+[env]
+  PORT = "3000"
+  NODE_ENV = "production"
+
+[[services]]
+  http_checks = []
+  internal_port = 3000
+  processes = ["app"]
+  protocol = "tcp"
+  script_checks = []
+
+  [services.conditions]
+    instance_events = ["start", "stop"]
+
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256

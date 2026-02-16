@@ -1,0 +1,6 @@
+# Fly.io MongoDB volume
+# Run: fly volumes create mongo_data --size=1
+
+[mounts]
+source = "mongo_data"
+destination = "/data/db"
