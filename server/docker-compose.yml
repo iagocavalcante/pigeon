@@ -1,7 +1,7 @@
 version: "2"
 services:
   mongo:
-    image: "mongo:3.7.9"
+    image: "mongo:8.3.8"
     volumes:
       - /data/mongodb/db:/data/db
     ports: 
