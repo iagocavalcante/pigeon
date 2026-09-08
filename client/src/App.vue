@@ -17,6 +17,10 @@
           <span class="nav-icon">👥</span>
           Lists
         </a>
+        <a href="#/settings" class="nav-item">
+          <span class="nav-icon">⚙️</span>
+          Settings
+        </a>
         <a href="" class="nav-item" @click.prevent="logout">
           <span class="nav-icon">🚪</span>
           Logout

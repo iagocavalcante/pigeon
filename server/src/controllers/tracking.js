@@ -1,5 +1,7 @@
+const crypto = require('crypto');
 const campaignModel = require('../models/campaign');
 const leadModel = require('../models/lead');
+const tracker = require('../email/tracker');
 
 module.exports = function () {
     let open = async function (req, res) {
@@ -36,12 +38,20 @@ module.exports = function () {
     }
 
     let click = async function (req, res) {
-        if (!req.query.link) {
+        if (!req.query.link || !req.query.sig) {
             return res.status(404).send('Not found');
         }
 
         let campaignId = req.params.id;
         let leadId = req.params.leadid;
+
+        let expectedSig = tracker.sign(campaignId, leadId, req.query.link);
+        let providedSig = Buffer.from(String(req.query.sig));
+        let expected = Buffer.from(expectedSig);
+
+        if (providedSig.length !== expected.length || !crypto.timingSafeEqual(providedSig, expected)) {
+            return res.status(404).send('Not found');
+        }
 
         let campaign = await campaignModel.findById(campaignId);
         if (!campaign) {

@@ -18,9 +18,10 @@ Server, `server/src/`:
 - `models/` — Mongoose schemas (`user`, `list`, `lead`, `campaign`).
 - `services/crud.js` — `CrudService`, the generic list/get/insert/update/delete
   used by `GenericController` and by campaign-specific extensions.
-- `email/sender.js` — sends via Mailgun. `email/tracker.js` rewrites campaign
-  body links to route through `/campaigns/tracking/click` and appends an open
-  pixel pointing at `/campaigns/tracking/open`.
+- `email/sender.js` — sends via Resend, using the calling user's own API key.
+  `email/tracker.js` rewrites campaign body links to route through
+  `/campaigns/tracking/click` (signed, HMAC-verified) and appends an open
+  pixel pointing at `/campaigns/tracking/open` plus an unsubscribe link.
 - `auth/` — Passport JWT strategy (`auth/strategies/jwt.js`).
 - `db/connection.js` — Mongoose connection, reads `MONGODB_URI`.
 
@@ -56,7 +57,7 @@ Definition of done: `npm test` green and `npm run build` green.
 ## Environment variables
 
 See `.env.example` at the repo root: `MONGODB_URI`, `JWT_SECRET`,
-`MAILGUN_API_KEY`, `MAILGUN_DOMAIN`, `MAIL_FROM`, `VITE_API_URL`, `PORT`.
+`SECRETS_KEY`, `PUBLIC_URL`, `VITE_API_URL`, `PORT`.
 
 ## Conventions
 

@@ -3,6 +3,7 @@ let ObjectId = mongoose.Schema.ObjectId;
 
 const Lead = mongoose.Schema({
   email: { type: String, required: true },
+  unsubscribed: { type: Boolean, default: false },
   data: [
     {
       label: String,

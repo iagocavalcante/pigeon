@@ -6,6 +6,7 @@ import EmailList from '../components/email/email-list.vue'
 import EmailNew from '../components/email/email-new.vue'
 import EmailView from '../components/email/email-view.vue'
 import ListsList from '../components/lists/lists-list.vue'
+import Settings from '../components/settings/Settings.vue'
 
 const routes = [
   {
@@ -44,6 +45,14 @@ const routes = [
     path: '/lists',
     name: 'ListsList',
     component: ListsList,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: Settings,
     meta: {
       requiresAuth: true
     }

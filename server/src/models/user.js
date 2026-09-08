@@ -8,7 +8,11 @@ let User = mongoose.Schema({
         name: String,
         role: String,
         enabled: Boolean
-    }],  
+    }],
+    sending: {
+        resendApiKeyEnc: String,
+        fromAddress: String
+    }
 })
 
 module.exports = mongoose.model('User', User)

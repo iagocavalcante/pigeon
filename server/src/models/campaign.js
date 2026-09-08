@@ -11,6 +11,8 @@ const Campaign = mongoose.Schema({
   clicks: {type: Number, default: 0 },
   unsubscribe: {type: Number, default: 0 },
   bounces: {type: Number, default: 0 },
+  sentCount: {type: Number, default: 0 },
+  failedCount: {type: Number, default: 0 },
   lists: [
     {title: String, type: ObjectId, ref: 'List'}
   ],

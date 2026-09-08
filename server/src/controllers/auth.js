@@ -1,7 +1,24 @@
 const jwt = require('jwt-simple');;
 const bcrypt = require('bcryptjs');
+const { isEmail } = require('validator');
 const User = require('../models/user');
 const cfg = require('../../config');
+const secretbox = require('../services/secretbox');
+
+const NAME_ADDR_RE = /<[^>]+@[^>]+>$/;
+
+function isValidFromAddress(value) {
+    return NAME_ADDR_RE.test(value) || isEmail(value);
+}
+
+function sendingResponse(user) {
+    const enc = user.sending && user.sending.resendApiKeyEnc;
+    return {
+        fromAddress: (user.sending && user.sending.fromAddress) || null,
+        hasApiKey: !!enc,
+        apiKeyHint: enc ? secretbox.decrypt(enc).slice(-4) : null
+    };
+}
 
 module.exports = function (app) {
     return {
@@ -28,6 +45,10 @@ module.exports = function (app) {
         },
         me: (req, res) => {
             const {password, ...safe} = req.user.toObject();
+            if (safe.sending) {
+                const {resendApiKeyEnc, ...safeSending} = safe.sending;
+                safe.sending = safeSending;
+            }
             res.status(200).json({
                 user: safe
             });
@@ -59,6 +80,30 @@ module.exports = function (app) {
         },
         edit: (req, res) => {
             return res.json({page: 'auth@edit'});
+        },
+        getSending: (req, res) => {
+            return res.status(200).json(sendingResponse(req.user));
+        },
+        updateSending: async (req, res) => {
+            const { resendApiKey, fromAddress } = req.body;
+
+            if (fromAddress !== undefined && !isValidFromAddress(fromAddress)) {
+                return res.status(422).json({error: 'Enter a valid from address'});
+            }
+
+            const user = req.user;
+            user.sending = user.sending || {};
+
+            if (resendApiKey) {
+                user.sending.resendApiKeyEnc = secretbox.encrypt(resendApiKey);
+            }
+            if (fromAddress !== undefined) {
+                user.sending.fromAddress = fromAddress;
+            }
+
+            await user.save();
+
+            return res.status(200).json(sendingResponse(user));
         }
     }
 }
