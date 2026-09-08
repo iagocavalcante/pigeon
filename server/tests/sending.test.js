@@ -133,8 +133,8 @@ describe('tracker', () => {
 
 describe('click tracking with signatures', () => {
   it('404s on a bad signature', async () => {
-    const campaign = await Campaign.create({ title: 'Test', body: '<p>hi</p>', start: new Date() });
-    const lead = await Lead.create({ email: 'clicker@example.com', lists: [] });
+    const campaign = await Campaign.create({ title: 'Test', body: '<p>hi</p>', start: new Date(), owner: new mongoose.Types.ObjectId() });
+    const lead = await Lead.create({ email: 'clicker@example.com', lists: [], owner: new mongoose.Types.ObjectId() });
 
     const res = await request(app)
       .get(`/campaigns/tracking/click/${campaign._id}/${lead._id}`)
@@ -144,8 +144,8 @@ describe('click tracking with signatures', () => {
   });
 
   it('redirects on a good signature', async () => {
-    const campaign = await Campaign.create({ title: 'Test', body: '<p>hi</p>', start: new Date() });
-    const lead = await Lead.create({ email: 'clicker2@example.com', lists: [] });
+    const campaign = await Campaign.create({ title: 'Test', body: '<p>hi</p>', start: new Date(), owner: new mongoose.Types.ObjectId() });
+    const lead = await Lead.create({ email: 'clicker2@example.com', lists: [], owner: new mongoose.Types.ObjectId() });
     const link = 'https://example.com/target';
     const sig = tracker.sign(String(campaign._id), String(lead._id), link);
 
@@ -160,7 +160,7 @@ describe('click tracking with signatures', () => {
 
 describe('unsubscribe', () => {
   it('sets unsubscribed on a good signature', async () => {
-    const lead = await Lead.create({ email: 'unsub@example.com', lists: [] });
+    const lead = await Lead.create({ email: 'unsub@example.com', lists: [], owner: new mongoose.Types.ObjectId() });
     const sig = tracker.signUnsubscribe(String(lead._id));
 
     const res = await request(app).get(`/leads/unsubscribe/${lead._id}/${sig}`);
@@ -173,7 +173,7 @@ describe('unsubscribe', () => {
   });
 
   it('404s on a bad signature', async () => {
-    const lead = await Lead.create({ email: 'unsub2@example.com', lists: [] });
+    const lead = await Lead.create({ email: 'unsub2@example.com', lists: [], owner: new mongoose.Types.ObjectId() });
 
     const res = await request(app).get(`/leads/unsubscribe/${lead._id}/deadbeef`);
 
