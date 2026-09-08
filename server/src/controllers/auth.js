@@ -19,7 +19,7 @@ module.exports = function (app) {
                     return res.status(401).send('Unauthorized');
                 }
 
-                let payload = {id: foundUser.id};
+                let payload = {id: foundUser.id, exp: Math.floor(Date.now()/1000) + 60*60*24*7};
                 let token = jwt.encode(payload, cfg.jwrSecret);
                 return res.json({token: token});
             } catch (err) {

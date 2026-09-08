@@ -76,6 +76,24 @@ See `.env.example` at the repo root: `MONGODB_URI`, `JWT_SECRET`,
 - Validation on public POST endpoints uses `express-validator` v7
   (`body(...).isEmail()` etc. run as route middleware, checked with
   `validationResult(req)`); see `controllers/leads.js`.
+- Multi-tenancy: `list`, `lead`, and `campaign` documents each carry a
+  required `owner` (ref `User`). `CrudService` methods all take an `owner`
+  filter (`list(owner)`, `get(id, owner)`, `insert(data, owner)`,
+  `update(id, owner, data)`, `delete(id, owner)`); `GenericController` passes
+  `req.user._id` as that owner on every call, and treats a `null`/missing
+  result as a 404 — never write a new `CrudService`/`GenericController` call
+  site that skips the owner argument.
+- `GenericController(model, allowedFields)` takes a per-model field
+  allowlist; `add`/`edit` pick only those keys off `req.body` before writing.
+  Add new writable fields to the model's allowlist in its `controllers/*.js`
+  factory, not by trusting `req.body` directly.
+- `POST /leads/subscribe` is public and takes a target List's `_id` (not a
+  title) as `list`; it 404s if that list doesn't exist and derives the
+  lead's `owner` from `list.owner`. There is no auto-create-list behavior.
+- `/oauth/token`, `/oauth/register`, and `/leads/subscribe` share one
+  `express-rate-limit` instance (20 req/15 min per IP, mounted in `app.js`
+  before `routes(app)`) — it's skipped when `NODE_ENV === 'test'` since the
+  suite calls these routes far more than 20 times per file.
 
 ## Deployment
 

@@ -23,7 +23,8 @@ const Lead = mongoose.Schema({
         }
       ]
     }
-  ]
+  ],
+  owner: { type: ObjectId, ref: 'User', required: true, index: true }
 });
 
 module.exports = mongoose.model('Lead', Lead);

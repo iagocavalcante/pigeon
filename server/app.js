@@ -5,10 +5,25 @@ const logger = require('morgan');
 const cookieParser = require('cookie-parser');
 const mongoose = require('./src/db/connection');
 const cors = require('cors');
+const rateLimit = require('express-rate-limit');
 const routes = require('./src/routes');
 
 const app = express();
-app.use(cors());
+app.set('trust proxy', 1);
+app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
+
+const publicEndpointLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  // The test suite exercises these routes far more than 20 times per file
+  // (register+login per test case); the limiter's job is to stop brute-force
+  // traffic in production, not to constrain the test harness.
+  skip: () => process.env.NODE_ENV === 'test'
+});
+
+app.use(['/oauth/token', '/oauth/register', '/leads/subscribe'], publicEndpointLimiter);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

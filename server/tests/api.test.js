@@ -130,24 +130,67 @@ describe('api/lists', () => {
     const listedAfterDelete = await request(app).get('/api/lists').set(auth);
     expect(listedAfterDelete.body.data).toHaveLength(0);
   });
+
+  it('returns 404 viewing/editing/deleting a nonexistent id', async () => {
+    const token = await registerAndLogin();
+    const auth = { Authorization: `Bearer ${token}` };
+    const missingId = new mongoose.Types.ObjectId().toString();
+
+    const viewed = await request(app).get(`/api/lists/${missingId}`).set(auth);
+    expect(viewed.status).toBe(404);
+
+    const updated = await request(app).put(`/api/lists/${missingId}`).set(auth).send({ title: 'x' });
+    expect(updated.status).toBe(404);
+
+    const deleted = await request(app).delete(`/api/lists/${missingId}`).set(auth);
+    expect(deleted.status).toBe(404);
+  });
 });
 
 describe('leads/subscribe', () => {
+  async function createList(auth, title = 'Newsletter') {
+    const res = await request(app).post('/api/lists').set(auth).send({ title, quantity: 0 });
+    return res.body.data;
+  }
+
   it('rejects an invalid email', async () => {
+    const token = await registerAndLogin();
+    const auth = { Authorization: `Bearer ${token}` };
+    const list = await createList(auth);
+
     const res = await request(app)
       .post('/leads/subscribe')
-      .send({ email: 'not-an-email', list: 'Newsletter' });
+      .send({ email: 'not-an-email', list: list._id });
     expect(res.status).toBe(422);
   });
 
-  it('creates a lead and a list with quantity 1', async () => {
+  it('rejects a non-mongo-id list', async () => {
     const res = await request(app)
       .post('/leads/subscribe')
       .send({ email: 'lead@example.com', list: 'Newsletter' });
+    expect(res.status).toBe(422);
+  });
+
+  it('404s when the list does not exist', async () => {
+    const missingId = new mongoose.Types.ObjectId().toString();
+    const res = await request(app)
+      .post('/leads/subscribe')
+      .send({ email: 'lead@example.com', list: missingId });
+    expect(res.status).toBe(404);
+  });
+
+  it('creates a lead and a list with quantity 1', async () => {
+    const token = await registerAndLogin();
+    const auth = { Authorization: `Bearer ${token}` };
+    const list = await createList(auth);
+
+    const res = await request(app)
+      .post('/leads/subscribe')
+      .send({ email: 'lead@example.com', list: list._id });
     expect(res.status).toBe(200);
 
-    const list = await List.findOne({ title: 'Newsletter' });
-    expect(list.quantity).toBe(1);
+    const updatedList = await List.findById(list._id);
+    expect(updatedList.quantity).toBe(1);
 
     const lead = await Lead.findOne({ email: 'lead@example.com' });
     expect(lead).not.toBeNull();
@@ -155,21 +198,26 @@ describe('leads/subscribe', () => {
   });
 
   it('keeps quantity at 1 when the same email subscribes to the same list again', async () => {
-    await request(app).post('/leads/subscribe').send({ email: 'lead@example.com', list: 'Newsletter' });
+    const token = await registerAndLogin();
+    const auth = { Authorization: `Bearer ${token}` };
+    const list = await createList(auth);
+
+    await request(app).post('/leads/subscribe').send({ email: 'lead@example.com', list: list._id });
     const res = await request(app)
       .post('/leads/subscribe')
-      .send({ email: 'lead@example.com', list: 'Newsletter' });
+      .send({ email: 'lead@example.com', list: list._id });
     expect(res.status).toBe(200);
 
-    const list = await List.findOne({ title: 'Newsletter' });
-    expect(list.quantity).toBe(1);
+    const updatedList = await List.findById(list._id);
+    expect(updatedList.quantity).toBe(1);
   });
 });
 
 describe('campaign tracking', () => {
   it('increments opens and returns an image/gif on open', async () => {
-    const campaign = await Campaign.create({ title: 'Test Campaign', body: '<p>hi</p>', start: new Date() });
-    const lead = await Lead.create({ email: 'tracked@example.com', lists: [] });
+    const owner = new mongoose.Types.ObjectId();
+    const campaign = await Campaign.create({ title: 'Test Campaign', body: '<p>hi</p>', start: new Date(), owner });
+    const lead = await Lead.create({ email: 'tracked@example.com', lists: [], owner });
 
     const res = await request(app).get(`/campaigns/tracking/open/${campaign._id}/${lead._id}`);
 

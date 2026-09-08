@@ -12,7 +12,8 @@ const Campaign = mongoose.Schema({
   bounces: {type: Number, default: 0 },
   lists: [
     {title: String, type: ObjectId, ref: 'List'}
-  ]
+  ],
+  owner: { type: ObjectId, ref: 'User', required: true, index: true }
 });
 
 module.exports = mongoose.model('Campaign', Campaign);
