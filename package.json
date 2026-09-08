@@ -1,0 +1,12 @@
+{
+  "name": "pigeon",
+  "private": true,
+  "scripts": {
+    "install:all": "npm ci --prefix server && npm ci --prefix client",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "test": "npm test --prefix server",
+    "build": "npm run build --prefix client",
+    "db": "docker compose up -d mongodb"
+  }
+}

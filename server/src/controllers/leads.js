@@ -1,3 +1,4 @@
+const { body, validationResult } = require('express-validator');
 const model = require('../models/lead');
 const listModel = require('../models/list');
 const GenericController = require('./generic');
@@ -5,13 +6,13 @@ const GenericController = require('./generic');
 module.exports = function () {
     const controller = new GenericController(model)
 
-    controller.subscribe = async function (req, res) {
-        req.checkBody('email', 'Enter a valid email').isEmail();
-        req.checkBody('list', 'List is required').exists();
-
-        let errors = req.validationErrors();
-        if (errors) {
-            return res.status(422).json(errors);
+    controller.subscribe = [
+        body('email', 'Enter a valid email').isEmail(),
+        body('list', 'List is required').exists(),
+        async function (req, res) {
+        let errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(422).json(errors.array());
         }
 
         let list = await listModel.findOne({ title: req.body.list });
@@ -39,7 +40,8 @@ module.exports = function () {
         await list.save();
 
         return res.json({status: 'success'});
-    }
+        }
+    ];
 
     controller.leadsByList = async function (req, res) {
         let lists = req.params.id.split(',');

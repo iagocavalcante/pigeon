@@ -4,7 +4,7 @@ import user from './modules/user'
 import email from './modules/email'
 
 window.axios = axios
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || '/api'
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || ''
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
 
 const store = createStore({

@@ -1,93 +1,159 @@
 const request = require('supertest');
-const express = require('express');
+const mongoose = require('mongoose');
+const app = require('../app');
 
-// Simple mock app without actual routes - just test the structure
-const app = express();
-app.use(express.json());
+const User = require('../src/models/user');
+const List = require('../src/models/list');
+const Lead = require('../src/models/lead');
+const Campaign = require('../src/models/campaign');
 
-// Mock routes
-app.get('/', (req, res) => res.status(200).json({ ok: true }));
+const testUser = { email: 'test@example.com', password: 'password123' };
 
-app.post('/oauth/token', (req, res) => {
-  if (!req.body.email || !req.body.password) {
-    return res.status(400).json({ error: 'Missing credentials' });
-  }
-  res.status(200).json({ token: 'mock-token' });
+async function registerAndLogin() {
+  await request(app).post('/oauth/register').send({ name: 'Test', ...testUser });
+  const res = await request(app)
+    .post('/oauth/token')
+    .send({ username: testUser.email, password: testUser.password });
+  return res.body.token;
+}
+
+beforeAll(async () => {
+  await mongoose.connection.asPromise();
 });
 
-app.post('/oauth/register', (req, res) => {
-  res.status(200).json({ user: { email: req.body.email } });
+beforeEach(async () => {
+  await User.deleteMany({});
+  await List.deleteMany({});
+  await Lead.deleteMany({});
+  await Campaign.deleteMany({});
 });
 
-// Protected routes (would normally use passport)
-app.get('/api/lists', (req, res) => res.status(200).json([]));
-app.get('/api/campaigns', (req, res) => res.status(200).json([]));
-app.get('/api/leads', (req, res) => res.status(200).json([]));
-app.post('/api/lists', (req, res) => res.status(201).json({ id: 1, name: req.body.name }));
+afterAll(async () => {
+  await mongoose.disconnect();
+});
 
-describe('API Routes', () => {
-  describe('GET /', () => {
-    it('should return ok', async () => {
-      const res = await request(app).get('/');
-      expect(res.status).toBe(200);
-      expect(res.body.ok).toBe(true);
-    });
+describe('oauth', () => {
+  it('registers a user', async () => {
+    const res = await request(app).post('/oauth/register').send({ name: 'Test', ...testUser });
+    expect(res.status).toBe(200);
+    expect(res.body.user.email).toBe(testUser.email);
   });
 
-  describe('POST /oauth/token', () => {
-    it('should require credentials', async () => {
-      const res = await request(app).post('/oauth/token');
-      expect(res.status).toBe(400);
-    });
-
-    it('should return token with valid credentials', async () => {
-      const res = await request(app)
-        .post('/oauth/token')
-        .send({ email: 'test@test.com', password: 'password123' });
-      expect(res.status).toBe(200);
-      expect(res.body.token).toBeDefined();
-    });
+  it('returns a token for valid credentials', async () => {
+    await request(app).post('/oauth/register').send({ name: 'Test', ...testUser });
+    const res = await request(app)
+      .post('/oauth/token')
+      .send({ username: testUser.email, password: testUser.password });
+    expect(res.status).toBe(200);
+    expect(res.body.token).toBeDefined();
   });
 
-  describe('POST /oauth/register', () => {
-    it('should register a new user', async () => {
-      const res = await request(app)
-        .post('/oauth/register')
-        .send({ email: 'test@test.com', password: 'password123' });
-      expect(res.status).toBe(200);
-      expect(res.body.user.email).toBe('test@test.com');
-    });
+  it('rejects a wrong password', async () => {
+    await request(app).post('/oauth/register').send({ name: 'Test', ...testUser });
+    const res = await request(app)
+      .post('/oauth/token')
+      .send({ username: testUser.email, password: 'wrong-password' });
+    expect(res.status).toBe(401);
   });
 
-  describe('GET /api/lists', () => {
-    it('should return empty array', async () => {
-      const res = await request(app).get('/api/lists');
-      expect(res.status).toBe(200);
-      expect(Array.isArray(res.body)).toBe(true);
-    });
+  it('rejects /oauth/me without a token', async () => {
+    const res = await request(app).get('/oauth/me');
+    expect(res.status).toBe(401);
   });
 
-  describe('GET /api/campaigns', () => {
-    it('should return campaigns', async () => {
-      const res = await request(app).get('/api/campaigns');
-      expect(res.status).toBe(200);
-    });
+  it('returns the user for /oauth/me with a token', async () => {
+    const token = await registerAndLogin();
+    const res = await request(app).get('/oauth/me').set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.user.email).toBe(testUser.email);
+  });
+});
+
+describe('api/lists', () => {
+  it('rejects requests without a token', async () => {
+    const res = await request(app).get('/api/lists');
+    expect(res.status).toBe(401);
   });
 
-  describe('GET /api/leads', () => {
-    it('should return leads', async () => {
-      const res = await request(app).get('/api/leads');
-      expect(res.status).toBe(200);
-    });
+  it('supports full CRUD with a token', async () => {
+    const token = await registerAndLogin();
+    const auth = { Authorization: `Bearer ${token}` };
+
+    const created = await request(app)
+      .post('/api/lists')
+      .set(auth)
+      .send({ title: 'Newsletter', quantity: 0 });
+    expect(created.status).toBe(200);
+    const id = created.body.data._id;
+
+    const listed = await request(app).get('/api/lists').set(auth);
+    expect(listed.status).toBe(200);
+    expect(listed.body.data).toHaveLength(1);
+
+    const viewed = await request(app).get(`/api/lists/${id}`).set(auth);
+    expect(viewed.status).toBe(200);
+    expect(viewed.body.data._id).toBe(id);
+
+    const updated = await request(app)
+      .put(`/api/lists/${id}`)
+      .set(auth)
+      .send({ title: 'Updated Newsletter' });
+    expect(updated.status).toBe(200);
+    expect(updated.body.data.title).toBe('Updated Newsletter');
+
+    const deleted = await request(app).delete(`/api/lists/${id}`).set(auth);
+    expect(deleted.status).toBe(200);
+
+    const listedAfterDelete = await request(app).get('/api/lists').set(auth);
+    expect(listedAfterDelete.body.data).toHaveLength(0);
+  });
+});
+
+describe('leads/subscribe', () => {
+  it('rejects an invalid email', async () => {
+    const res = await request(app)
+      .post('/leads/subscribe')
+      .send({ email: 'not-an-email', list: 'Newsletter' });
+    expect(res.status).toBe(422);
   });
 
-  describe('POST /api/lists', () => {
-    it('should create a new list', async () => {
-      const res = await request(app)
-        .post('/api/lists')
-        .send({ name: 'Test List', description: 'Test Description' });
-      expect(res.status).toBe(201);
-      expect(res.body.name).toBe('Test List');
-    });
+  it('creates a lead and a list with quantity 1', async () => {
+    const res = await request(app)
+      .post('/leads/subscribe')
+      .send({ email: 'lead@example.com', list: 'Newsletter' });
+    expect(res.status).toBe(200);
+
+    const list = await List.findOne({ title: 'Newsletter' });
+    expect(list.quantity).toBe(1);
+
+    const lead = await Lead.findOne({ email: 'lead@example.com' });
+    expect(lead).not.toBeNull();
+    expect(lead.lists).toHaveLength(1);
+  });
+
+  it('keeps quantity at 1 when the same email subscribes to the same list again', async () => {
+    await request(app).post('/leads/subscribe').send({ email: 'lead@example.com', list: 'Newsletter' });
+    const res = await request(app)
+      .post('/leads/subscribe')
+      .send({ email: 'lead@example.com', list: 'Newsletter' });
+    expect(res.status).toBe(200);
+
+    const list = await List.findOne({ title: 'Newsletter' });
+    expect(list.quantity).toBe(1);
+  });
+});
+
+describe('campaign tracking', () => {
+  it('increments opens and returns an image/gif on open', async () => {
+    const campaign = await Campaign.create({ title: 'Test Campaign', body: '<p>hi</p>', start: new Date() });
+    const lead = await Lead.create({ email: 'tracked@example.com', lists: [] });
+
+    const res = await request(app).get(`/campaigns/tracking/open/${campaign._id}/${lead._id}`);
+
+    expect(res.status).toBe(200);
+    expect(res.headers['content-type']).toBe('image/gif');
+
+    const updated = await Campaign.findById(campaign._id);
+    expect(updated.opens).toBe(1);
   });
 });

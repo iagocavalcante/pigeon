@@ -1,56 +1,44 @@
 # Pigeon 🐦
 
-Email marketing management platform built with Vue.js and Node.js.
+Email marketing platform: manage contact lists, send tracked email
+campaigns, and record opens/clicks/unsubscribes per lead. Vue 3 client,
+Express + MongoDB API.
 
-## Features
-
-- Email campaign management
-- Contact list management
-- User authentication
-- Real-time analytics
-
-## Tech Stack
-
-- **Frontend:** Vue 3 + Vite
-- **Backend:** Node.js + Express + MongoDB
-- **Testing:** Jest (API), Nightwatch (E2E)
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 18+
-- MongoDB
-
-### Installation
+## Quick start
 
 ```bash
-# Install client dependencies
-cd client && npm install
-
-# Install server dependencies
-cd ../server && npm install
+cp .env.example .env   # fill in MONGODB_URI, JWT_SECRET, Mailgun creds, etc.
+npm run install:all    # npm ci in server/ and client/
+npm run db              # docker compose up -d mongodb
+npm run dev:server      # API on :3000
+npm run dev:client      # SPA on :8080 (proxies /api, /oauth, /campaigns to :3000)
 ```
 
-### Running
+## Architecture
+
+- `client/` — Vue 3 + Vite SPA, Vuex for state, Materialize CSS.
+- `server/` — Express 5 + Mongoose API. Routes → controllers → a generic
+  `CrudService` for standard resources (lists, leads, campaigns); custom
+  logic for auth, lead subscription, and campaign open/click tracking.
+- MongoDB stores users, lists, leads, and campaigns.
+
+## Testing
 
 ```bash
-# Start development server (client only)
-cd client && npm run dev
-
-# Start production server
-cd server && npm start
+npm test   # jest + supertest against a real MongoDB (npm run db first)
 ```
 
-### Testing
+## Deployment
 
-```bash
-# Run API tests
-cd server && npm test
+Both apps deploy to Fly.io: `server/fly.toml` (`pigeon-api`) and
+`client/fly.toml` (`pigeon-web`, served via the nginx config in
+`client/nginx.conf`). `fly.mongo.toml` documents the Mongo data volume.
+Deploy each app with `fly deploy` from its directory.
 
-# Run E2E tests
-cd client && npm run test:e2e
-```
+## For AI agents
+
+See [AGENTS.md](./AGENTS.md) for the codebase map, conventions, and known
+gaps. `CLAUDE.md` in this repo just points there.
 
 ## License
 

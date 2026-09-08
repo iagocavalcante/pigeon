@@ -1,0 +1,2 @@
+2026-09-07 22:13:23|Bash|cd /Users/iagocavalcante/Workspaces/IagoCavalcante/pigeon; rm -rf .claude-memory; cat AGENTS.md READ
+2026-09-07 22:13:37|Bash|cd /Users/iagocavalcante/Workspaces/IagoCavalcante/pigeon; docker rm -f pigeon-verify-mongo >/dev/nu

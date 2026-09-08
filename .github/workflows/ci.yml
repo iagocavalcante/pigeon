@@ -10,14 +10,21 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      mongo:
+        image: mongo:8
+        ports:
+          - 27017:27017
+
     steps:
       - uses: actions/checkout@v6
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
 
       - name: Install server dependencies
         run: |
@@ -25,6 +32,8 @@ jobs:
           npm ci
 
       - name: Run server tests
+        env:
+          MONGODB_URI: mongodb://localhost:27017/pigeon_test
         run: |
           cd server
           npm test
@@ -38,8 +47,3 @@ jobs:
         run: |
           cd client
           npm run build
-
-      - name: Lint code
-        run: |
-          cd client
-          npm run lint || true

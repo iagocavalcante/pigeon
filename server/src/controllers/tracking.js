@@ -2,28 +2,20 @@ const campaignModel = require('../models/campaign');
 const leadModel = require('../models/lead');
 
 module.exports = function () {
-    let open = function (req, res) {
+    let open = async function (req, res) {
         let campaignId = req.params.id;
         let leadId = req.params.leadid;
 
-        campaignModel.findById(campaignId, function (err, campaign) {
-            if (err) {
-                return err;
-            }
+        let campaign = await campaignModel.findById(campaignId);
+        if (!campaign) {
+            return res.status(404).send('Not found');
+        }
 
-            campaign.opens += 1;
-            campaign.save();
-        });
+        campaign.opens += 1;
+        await campaign.save();
 
-        leadModel.findById(leadId, function (err, lead) {
-            if (err) {
-                return err;
-            }
-
-            if (!lead) {
-                return;
-            }
-
+        let lead = await leadModel.findById(leadId);
+        if (lead) {
             let actions = lead.actions;
             actions.push({
                 campaign: campaignId,
@@ -35,15 +27,15 @@ module.exports = function () {
             });
 
             lead.actions = actions;
-            lead.save();
-        });
+            await lead.save();
+        }
 
-        let buf = new Buffer(35);
+        let buf = Buffer.alloc(35);
         res.writeHead(200, { 'Content-Type': 'image/gif' });
         res.end(buf, 'binary');
     }
 
-    let click = function (req, res) {
+    let click = async function (req, res) {
         if (!req.query.link) {
             return res.status(404).send('Not found');
         }
@@ -51,24 +43,16 @@ module.exports = function () {
         let campaignId = req.params.id;
         let leadId = req.params.leadid;
 
-        campaignModel.findById(campaignId, function (err, campaign) {
-            if (err) {
-                return err;
-            }
+        let campaign = await campaignModel.findById(campaignId);
+        if (!campaign) {
+            return res.status(404).send('Not found');
+        }
 
-            campaign.clicks += 1;
-            campaign.save();
-        });
+        campaign.clicks += 1;
+        await campaign.save();
 
-        leadModel.findById(leadId, function (err, lead) {
-            if (err) {
-                return err;
-            }
-
-            if (!lead) {
-                return;
-            }
-
+        let lead = await leadModel.findById(leadId);
+        if (lead) {
             let actions = lead.actions;
             actions.push({
                 campaign: campaignId,
@@ -80,8 +64,8 @@ module.exports = function () {
             });
 
             lead.actions = actions;
-            lead.save();
-        });
+            await lead.save();
+        }
 
         res.writeHead(302, {
             'Location': req.query.link

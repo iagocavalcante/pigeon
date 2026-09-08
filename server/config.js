@@ -1,3 +1,3 @@
 module.exports = {
-    jwrSecret: "jasu37dhna83hdaa3434fds"
+    jwrSecret: process.env.JWT_SECRET || 'dev-only-insecure-secret'
 };

@@ -14,13 +14,12 @@ const Lead = mongoose.Schema({
   ],
   actions: [
     {
-      type: ObjectId, 
-      ref: 'List',
+      campaign: { type: ObjectId, ref: 'Campaign' },
       action: [
         {
-          type: String,
+          typeAction: String,
           link: String,
-          data: Date
+          date: Date
         }
       ]
     }
