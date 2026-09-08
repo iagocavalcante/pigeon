@@ -7,4 +7,6 @@ module.exports = function (app) {
     app.get('/oauth/me', passport.authenticate('jwt', {session: false}), controller.me);
     app.post('/oauth/register', controller.register);
     app.put('/oauth/profile-update', passport.authenticate('jwt', {session: false}), controller.edit);
+    app.get('/oauth/sending', passport.authenticate('jwt', {session: false}), controller.getSending);
+    app.put('/oauth/sending', passport.authenticate('jwt', {session: false}), controller.updateSending);
 }
