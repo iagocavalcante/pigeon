@@ -19,6 +19,18 @@ services:
     depends_on:
       - mongo
 
+  worker:
+    build: ../server
+    network_mode: host
+    env_file: ../.env
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://127.0.0.1:27017/pigeon
+    command: ["node", "bin/send_email_service.js"]
+    restart: unless-stopped
+    depends_on:
+      - mongo
+
   web:
     build: ../client
     network_mode: host
