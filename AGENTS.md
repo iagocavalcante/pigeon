@@ -95,10 +95,40 @@ See `.env.example` at the repo root: `MONGODB_URI`, `JWT_SECRET`,
 - `POST /leads/subscribe` is public and takes a target List's `_id` (not a
   title) as `list`; it 404s if that list doesn't exist and derives the
   lead's `owner` from `list.owner`. There is no auto-create-list behavior.
-- `/oauth/token`, `/oauth/register`, and `/leads/subscribe` share one
-  `express-rate-limit` instance (20 req/15 min per IP, mounted in `app.js`
-  before `routes(app)`) — it's skipped when `NODE_ENV === 'test'` since the
-  suite calls these routes far more than 20 times per file.
+- `/oauth/token`, `/oauth/register`, and `/leads/subscribe` each get their
+  own `express-rate-limit` instance, mounted in `app.js` before `routes(app)`:
+  token 20 req/15 min, register 5 req/hour, subscribe 60 req/15 min (all per
+  IP). All three are skipped when `NODE_ENV === 'test'` since the suite calls
+  these routes far more than that per file.
+
+## Roles and admin
+
+- `models/user.js` carries `role` (`'admin'` or `'user'`, default `'user'`),
+  `enabled` (default `true`), and `createdAt`. The **first account ever
+  registered** (`User.countDocuments() === 0` at register time) becomes
+  `role: 'admin'`; every subsequent registration is `'user'`. `GET /oauth/me`
+  returns `role` as part of the user document.
+- A disabled user (`enabled: false`) is rejected everywhere authentication is
+  checked: the JWT strategy (`auth/strategies/jwt.js`) treats them as
+  unauthenticated, and `POST /oauth/token` (login) 401s them even with a
+  correct password.
+- `src/auth/requireAdmin.js` is a middleware (403 unless `req.user.role ===
+  'admin'`) layered on top of the blanket `/api` JWT gate; it's used by
+  `routes/admin.js` under `/api/admin`:
+  - `GET /api/admin/users` — all users (`_id,name,email,role,enabled,createdAt`).
+  - `PATCH /api/admin/users/:id` — body `{enabled?, role?}` (allowlisted);
+    400s if `:id` is the requesting admin's own id (an admin can't disable or
+    demote themselves).
+  - `GET /api/admin/stats` — counts of users, lists, leads, campaigns.
+  - `GET`/`PUT /api/admin/settings` — reads/writes `{allowRegistration}`.
+- Registration gating: `models/setting.js` (`{key, value}`, `key` unique)
+  backs a DB-stored `allowRegistration` setting via
+  `services/registrationSetting.js`. `POST /oauth/register` checks that DB
+  setting first, falling back to the `ALLOW_REGISTRATION` env var when no
+  setting document exists. **Bootstrap exception:** registration is always
+  allowed while `User.countDocuments() === 0`, regardless of the env var or
+  the DB setting, so a fresh instance can always create its first (admin)
+  account.
 
 ## Deployment
 

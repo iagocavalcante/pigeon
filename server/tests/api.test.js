@@ -81,9 +81,12 @@ describe('oauth', () => {
   });
 
   it('rejects registration when ALLOW_REGISTRATION is false', async () => {
+    // Zero-user bootstrap always allows registration regardless of the flag,
+    // so seed a first user before exercising the disabled case.
+    await request(app).post('/oauth/register').send({ name: 'Test', ...testUser });
     process.env.ALLOW_REGISTRATION = 'false';
     try {
-      const res = await request(app).post('/oauth/register').send({ name: 'Test', ...testUser });
+      const res = await request(app).post('/oauth/register').send({ name: 'Second', email: 'second@example.com', password: 'password123' });
       expect(res.status).toBe(403);
       expect(res.body.error).toBe('Registration is disabled');
     } finally {

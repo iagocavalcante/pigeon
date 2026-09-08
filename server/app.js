@@ -12,18 +12,38 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(cors({ origin: process.env.CORS_ORIGIN || true }));
 
-const publicEndpointLimiter = rateLimit({
+// The test suite exercises these routes far more than their limits per file
+// (register+login per test case); the limiter's job is to stop brute-force
+// traffic in production, not to constrain the test harness.
+const skipInTest = () => process.env.NODE_ENV === 'test';
+
+const tokenLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
   standardHeaders: true,
   legacyHeaders: false,
-  // The test suite exercises these routes far more than 20 times per file
-  // (register+login per test case); the limiter's job is to stop brute-force
-  // traffic in production, not to constrain the test harness.
-  skip: () => process.env.NODE_ENV === 'test'
+  skip: skipInTest
 });
 
-app.use(['/oauth/token', '/oauth/register', '/leads/subscribe'], publicEndpointLimiter);
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: skipInTest
+});
+
+const subscribeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: skipInTest
+});
+
+app.use('/oauth/token', tokenLimiter);
+app.use('/oauth/register', registerLimiter);
+app.use('/leads/subscribe', subscribeLimiter);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

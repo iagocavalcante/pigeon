@@ -4,6 +4,7 @@ const { isEmail } = require('validator');
 const User = require('../models/user');
 const cfg = require('../../config');
 const secretbox = require('../services/secretbox');
+const { isRegistrationAllowed } = require('../services/registrationSetting');
 
 const NAME_ADDR_RE = /<[^>]+@[^>]+>$/;
 
@@ -36,6 +37,10 @@ module.exports = function (app) {
                     return res.status(401).send('Unauthorized');
                 }
 
+                if (foundUser.enabled === false) {
+                    return res.status(401).send('Unauthorized');
+                }
+
                 let payload = {id: foundUser.id, exp: Math.floor(Date.now()/1000) + 60*60*24*7};
                 let token = jwt.encode(payload, cfg.jwrSecret);
                 return res.json({token: token});
@@ -54,16 +59,22 @@ module.exports = function (app) {
             });
         },
         register: async (req, res) => {
-            if (process.env.ALLOW_REGISTRATION === 'false') {
-                return res.status(403).json({error: 'Registration is disabled'});
-            }
-
             try {
+                // Registration is always allowed while there are zero users so the
+                // instance can bootstrap its first (admin) account, regardless of
+                // ALLOW_REGISTRATION or the allowRegistration setting.
+                const isBootstrap = (await User.countDocuments()) === 0;
+
+                if (!isBootstrap && !(await isRegistrationAllowed())) {
+                    return res.status(403).json({error: 'Registration is disabled'});
+                }
+
                 let hashedPassword = await bcrypt.hash(req.body.password, 10);
                 let data = {
                     name: req.body.name,
                     email: req.body.email,
                     password: hashedPassword,
+                    role: isBootstrap ? 'admin' : 'user',
                     accounts: [{
                         name: req.body.account_name || 'default',
                         role: 'owner',

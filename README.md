@@ -35,7 +35,9 @@ run with `network_mode: host`, bound to loopback on ports 27017, 3100, and
 8098. Put a `.env` at the repo root (see `.env.example`), then run
 `deploy/deploy.sh` to pull and rebuild. A Cloudflare tunnel points at
 `127.0.0.1:8098` as the public front door. Set `ALLOW_REGISTRATION=false`
-in `.env` once the first account exists.
+in `.env` once the first account exists. The first account ever registered
+is automatically made an admin, and admins can also flip registration on/off
+at runtime from `/api/admin/settings`.
 
 ## For AI agents
 

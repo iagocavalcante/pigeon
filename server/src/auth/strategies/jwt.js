@@ -13,7 +13,7 @@ let params = {
 let strategy = new passportJwtStrategy(params, async function(jwt_payload, done) {
     try {
         let user = await User.findById(jwt_payload.id);
-        if (user) {
+        if (user && user.enabled !== false) {
             return done(null, user);
         } else {
             return done(null, false);
