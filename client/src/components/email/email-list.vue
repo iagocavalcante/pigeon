@@ -11,9 +11,13 @@
               <tr>
                 <th>#</th>
                 <th>título</th>
+                <th>assunto</th>
                 <th>status</th>
                 <th>início</th>
-                <th>lista</th>
+                <th>enviados</th>
+                <th>falhas</th>
+                <th>aberturas</th>
+                <th>clicks</th>
                 <th></th>
               </tr>
             </thead>
@@ -21,9 +25,13 @@
               <tr :key="index" v-for="(email, index) in emails">
                 <td>{{ index + 1 }}</td>
                 <td>{{ email.title }}</td>
+                <td>{{ email.subject }}</td>
                 <td>{{ email.status }}</td>
                 <td>{{ email.start }}</td>
-                <td>{{ email.list }}</td>
+                <td>{{ email.sentCount }}</td>
+                <td>{{ email.failedCount }}</td>
+                <td>{{ email.opens }}</td>
+                <td>{{ email.clicks }}</td>
                 <td>
                   <a :href="`#/email/view/${email._id}`" class="btn">Ver</a>  
                   <a :href="`#/email/edit/${email._id}`" class="btn blue">Editar</a>  

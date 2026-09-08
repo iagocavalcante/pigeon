@@ -1,5 +1,3 @@
-import qs from 'qs'
-
 export default {
   state: {
     emails: [],
@@ -27,7 +25,11 @@ export default {
       })
     },
     insert: function (context, data) {
-      return window.axios.post('/api/campaigns', qs.stringify(data)).then((res) => {
+      // Campaigns take a `lists` array; qs.stringify's default bracket format
+      // (lists[0]=..) isn't parsed back into an array by the server (express
+      // runs its urlencoded parser with extended: false), so send JSON here,
+      // which express.json() decodes correctly.
+      return window.axios.post('/api/campaigns', data, { headers: { 'Content-Type': 'application/json' } }).then((res) => {
         return res
       })
     }

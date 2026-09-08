@@ -19,8 +19,24 @@
               <td>{{ email.title }}</td>
             </tr>
             <tr>
+              <th>Assunto</th>
+              <td>{{ email.subject }}</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+              <td>{{ email.status }}</td>
+            </tr>
+            <tr>
               <th>Data de disparo</th>
               <td>{{ email.start }}</td>
+            </tr>
+            <tr>
+              <th>Enviados</th>
+              <td>{{ email.sentCount }}</td>
+            </tr>
+            <tr>
+              <th>Falhas</th>
+              <td>{{ email.failedCount }}</td>
             </tr>
             <tr>
               <th>Aberturas</th>
