@@ -30,10 +30,12 @@ npm test   # jest + supertest against a real MongoDB (npm run db first)
 
 ## Deployment
 
-Both apps deploy to Fly.io: `server/fly.toml` (`pigeon-api`) and
-`client/fly.toml` (`pigeon-web`, served via the nginx config in
-`client/nginx.conf`). `fly.mongo.toml` documents the Mongo data volume.
-Deploy each app with `fly deploy` from its directory.
+Self-hosted via `deploy/docker-compose.prod.yml`: mongo, api, and web all
+run with `network_mode: host`, bound to loopback on ports 27017, 3100, and
+8098. Put a `.env` at the repo root (see `.env.example`), then run
+`deploy/deploy.sh` to pull and rebuild. A Cloudflare tunnel points at
+`127.0.0.1:8098` as the public front door. Set `ALLOW_REGISTRATION=false`
+in `.env` once the first account exists.
 
 ## For AI agents
 

@@ -77,11 +77,13 @@ See `.env.example` at the repo root: `MONGODB_URI`, `JWT_SECRET`,
   (`body(...).isEmail()` etc. run as route middleware, checked with
   `validationResult(req)`); see `controllers/leads.js`.
 
+## Deployment
+
+See `deploy/` for the production Docker Compose setup and deploy script.
+
 ## Known gaps
 
-- **Passwords are stored and compared in plaintext** (`controllers/auth.js`
-  `register`/`token`). This needs bcrypt hashing before this is safe for
-  real users — do not treat current auth as production-secure.
+- Passwords are hashed with bcrypt (`controllers/auth.js` `register`/`token`).
 - Nightwatch is configured (`client/test/e2e`) but no e2e tests are actually
   written or wired into CI.
 - The `server/bin/send_email*.js` worker scripts are not tested and are not

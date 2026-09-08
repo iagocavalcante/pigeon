@@ -67,6 +67,29 @@ describe('oauth', () => {
     expect(res.status).toBe(200);
     expect(res.body.user.email).toBe(testUser.email);
   });
+
+  it('does not store the plaintext password', async () => {
+    await request(app).post('/oauth/register').send({ name: 'Test', ...testUser });
+    const stored = await User.findOne({ email: testUser.email });
+    expect(stored.password).not.toBe(testUser.password);
+  });
+
+  it('does not return a password field from /oauth/me', async () => {
+    const token = await registerAndLogin();
+    const res = await request(app).get('/oauth/me').set('Authorization', `Bearer ${token}`);
+    expect(res.body.user.password).toBeUndefined();
+  });
+
+  it('rejects registration when ALLOW_REGISTRATION is false', async () => {
+    process.env.ALLOW_REGISTRATION = 'false';
+    try {
+      const res = await request(app).post('/oauth/register').send({ name: 'Test', ...testUser });
+      expect(res.status).toBe(403);
+      expect(res.body.error).toBe('Registration is disabled');
+    } finally {
+      delete process.env.ALLOW_REGISTRATION;
+    }
+  });
 });
 
 describe('api/lists', () => {

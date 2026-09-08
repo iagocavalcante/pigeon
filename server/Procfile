@@ -1,2 +1,0 @@
-web node ./bin/www
-worker: ./bin/send_email_service.js

@@ -1,0 +1,32 @@
+services:
+  mongo:
+    image: mongo:7
+    network_mode: host
+    command: ["mongod", "--bind_ip", "127.0.0.1"]
+    volumes:
+      - pigeon_mongo:/data/db
+    restart: unless-stopped
+
+  api:
+    build: ../server
+    network_mode: host
+    env_file: ../.env
+    environment:
+      - PORT=3100
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://127.0.0.1:27017/pigeon
+    restart: unless-stopped
+    depends_on:
+      - mongo
+
+  web:
+    build: ../client
+    network_mode: host
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+    depends_on:
+      - api
+
+volumes:
+  pigeon_mongo:

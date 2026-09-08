@@ -1,4 +1,5 @@
 const jwt = require('jwt-simple');;
+const bcrypt = require('bcryptjs');
 const User = require('../models/user');
 const cfg = require('../../config');
 
@@ -12,9 +13,9 @@ module.exports = function (app) {
             }
 
             try {
-                let foundUser = await User.findOne({email: user.username, password: user.password});
-                
-                if (!foundUser) {
+                let foundUser = await User.findOne({email: user.username});
+
+                if (!foundUser || !(await bcrypt.compare(user.password, foundUser.password))) {
                     return res.status(401).send('Unauthorized');
                 }
 
@@ -26,25 +27,32 @@ module.exports = function (app) {
             }
         },
         me: (req, res) => {
+            const {password, ...safe} = req.user.toObject();
             res.status(200).json({
-                user: req.user
+                user: safe
             });
         },
         register: async (req, res) => {
-            let data = {
-                name: req.body.name,
-                email: req.body.email,
-                password: req.body.password,
-                accounts: [{
-                    name: req.body.account_name || 'default',
-                    role: 'owner',
-                    enabled: true
-                }]
+            if (process.env.ALLOW_REGISTRATION === 'false') {
+                return res.status(403).json({error: 'Registration is disabled'});
             }
 
             try {
+                let hashedPassword = await bcrypt.hash(req.body.password, 10);
+                let data = {
+                    name: req.body.name,
+                    email: req.body.email,
+                    password: hashedPassword,
+                    accounts: [{
+                        name: req.body.account_name || 'default',
+                        role: 'owner',
+                        enabled: true
+                    }]
+                }
+
                 let user = await User.create(data);
-                return res.status(200).json({user: user});
+                const {password, ...safe} = user.toObject();
+                return res.status(200).json({user: safe});
             } catch (err) {
                 return res.status(422).json({err: err});
             }
