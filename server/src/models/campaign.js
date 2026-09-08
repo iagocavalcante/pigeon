@@ -3,6 +3,7 @@ let ObjectId = mongoose.Schema.ObjectId;
 
 const Campaign = mongoose.Schema({
   title: { type: String, required: true },
+  subject: String,
   body: String,
   status: String,
   start: { type: Date, required: true },
