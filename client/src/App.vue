@@ -5,22 +5,26 @@
         <h2>Pigeon</h2>
       </div>
       <nav class="sidebar-nav">
-        <a href="#/" class="nav-item">
+        <router-link to="/" class="nav-item">
           <span class="nav-icon">🏠</span>
           Home
-        </a>
-        <a href="#/email" class="nav-item">
+        </router-link>
+        <router-link to="/email" class="nav-item">
           <span class="nav-icon">📧</span>
           Campaigns
-        </a>
-        <a href="#/lists" class="nav-item">
+        </router-link>
+        <router-link to="/lists" class="nav-item">
           <span class="nav-icon">👥</span>
           Lists
-        </a>
-        <a href="#/settings" class="nav-item">
+        </router-link>
+        <router-link to="/settings" class="nav-item">
           <span class="nav-icon">⚙️</span>
           Settings
-        </a>
+        </router-link>
+        <router-link v-if="isAdmin" to="/admin" class="nav-item">
+          <span class="nav-icon">🛡️</span>
+          Admin
+        </router-link>
         <a href="" class="nav-item" @click.prevent="logout">
           <span class="nav-icon">🚪</span>
           Logout
@@ -62,6 +66,9 @@ export default {
         return this.me.user.name.charAt(0).toUpperCase()
       }
       return 'U'
+    },
+    isAdmin() {
+      return !!(this.me && this.me.user && this.me.user.role === 'admin')
     }
   },
   methods: {
@@ -69,7 +76,7 @@ export default {
       window.localStorage.removeItem('token')
       this.$store.commit('updateUser', null)
       this.$store.commit('updateToken', null)
-      window.location.href = '#/login'
+      this.$router.push('/login')
     }
   }
 }

@@ -6,7 +6,10 @@ import EmailList from '../components/email/email-list.vue'
 import EmailNew from '../components/email/email-new.vue'
 import EmailView from '../components/email/email-view.vue'
 import ListsList from '../components/lists/lists-list.vue'
+import ListLeads from '../components/lists/list-leads.vue'
+import Subscribe from '../components/subscribe/Subscribe.vue'
 import Settings from '../components/settings/Settings.vue'
+import Admin from '../components/admin/Admin.vue'
 
 const routes = [
   {
@@ -50,12 +53,33 @@ const routes = [
     }
   },
   {
+    path: '/lists/:id/leads',
+    name: 'ListLeads',
+    component: ListLeads,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
     path: '/settings',
     name: 'Settings',
     component: Settings,
     meta: {
       requiresAuth: true
     }
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: Admin,
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/subscribe/:listId',
+    name: 'Subscribe',
+    component: Subscribe
   },
   {
     path: '/login',
