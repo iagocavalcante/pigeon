@@ -7,6 +7,7 @@
     "dev:client": "npm run dev --prefix client",
     "test": "npm test --prefix server",
     "build": "npm run build --prefix client",
-    "db": "docker compose up -d mongodb"
+    "db": "docker compose up -d mongodb",
+    "lock:server": "docker run --rm -v \"$PWD/server\":/app -w /app node:20-alpine npm install --package-lock-only --ignore-scripts"
   }
 }

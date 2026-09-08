@@ -2,3 +2,4 @@
 node_modules/
 .claude-memory/
 client/dist/
+.claude/
