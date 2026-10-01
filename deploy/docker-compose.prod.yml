@@ -1,6 +1,6 @@
 services:
   mongo:
-    image: mongo:7
+    image: mongo:9
     network_mode: host
     command: ["mongod", "--bind_ip", "127.0.0.1"]
     volumes:
